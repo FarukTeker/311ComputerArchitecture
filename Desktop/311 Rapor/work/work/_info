@@ -1,0 +1,241 @@
+m255
+K4
+z2
+!s11f vlog 2020.1 2020.02, Feb 28 2020
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+d/home/omer/Desktop
+vadder
+!s110 1765909359
+!i10b 1
+!s100 gWb<;Y:[8c^V3JALeYLDZ1
+Z0 !s11b Dg1SIo80bB@j0V0VzS_@n1
+I__;A`@:bfZ=Wzoi>cNB:h0
+Z1 VDg1SIo80bB@j0V0VzS_@n1
+Z2 d/home/omer/Desktop/sonoev
+Z3 w1765887960
+8/home/omer/Desktop/Odev1/coding/adder.v
+F/home/omer/Desktop/Odev1/coding/adder.v
+!i122 3
+Z4 L0 1 5
+Z5 OV;L;2020.1;71
+r1
+!s85 0
+31
+!s108 1765909359.000000
+!s107 /home/omer/Desktop/Odev1/coding/adder.v|
+!s90 -reportprogress|300|-work|work|-stats=none|/home/omer/Desktop/Odev1/coding/adder.v|
+!i113 1
+Z6 o-work work
+Z7 tCvgOpt 0
+valu32
+!s110 1765909377
+!i10b 1
+!s100 M1IgzofEQ[WRoCR59:D`n1
+R0
+I65UOk`fVZE_2z]0XdPgOk2
+R1
+R2
+w1765904390
+8/home/omer/Desktop/Odev1/coding/alu32.v
+F/home/omer/Desktop/Odev1/coding/alu32.v
+!i122 9
+L0 1 31
+R5
+r1
+!s85 0
+31
+!s108 1765909377.000000
+!s107 /home/omer/Desktop/Odev1/coding/alu32.v|
+!s90 -reportprogress|300|-work|work|-stats=none|/home/omer/Desktop/Odev1/coding/alu32.v|
+!i113 1
+R6
+R7
+valucont
+!s110 1765909371
+!i10b 1
+!s100 mRLfWVolSLG=`bcI9XhTW3
+R0
+I?8?LX93ZAYffO_>bTN_>P0
+R1
+R2
+w1765904391
+8/home/omer/Desktop/Odev1/coding/alucont.v
+F/home/omer/Desktop/Odev1/coding/alucont.v
+!i122 7
+L0 1 27
+R5
+r1
+!s85 0
+31
+!s108 1765909371.000000
+!s107 /home/omer/Desktop/Odev1/coding/alucont.v|
+!s90 -reportprogress|300|-work|work|-stats=none|/home/omer/Desktop/Odev1/coding/alucont.v|
+!i113 1
+R6
+R7
+vcontrol
+!s110 1765909343
+!i10b 1
+!s100 IL_O^YDznPTF`P?6MaX[K2
+R0
+IC]02OLFOB9Q@UJHhi[LTV2
+R1
+R2
+w1765904591
+8/home/omer/Desktop/Odev1/coding/control.v
+F/home/omer/Desktop/Odev1/coding/control.v
+!i122 0
+L0 1 76
+R5
+r1
+!s85 0
+31
+!s108 1765909343.000000
+!s107 /home/omer/Desktop/Odev1/coding/control.v|
+!s90 -reportprogress|300|-work|work|-stats=none|/home/omer/Desktop/Odev1/coding/control.v|
+!i113 1
+R6
+R7
+vmult2_to_1_32
+!s110 1765909350
+!i10b 1
+!s100 Y_Id<LIRQ3DbCYAcIf6lb3
+R0
+IXcf4YRK_9JM=V8BgLBAMl1
+R1
+R2
+R3
+8/home/omer/Desktop/Odev1/coding/mult2_to_1_32.v
+F/home/omer/Desktop/Odev1/coding/mult2_to_1_32.v
+!i122 1
+Z8 L0 1 6
+R5
+r1
+!s85 0
+31
+!s108 1765909350.000000
+!s107 /home/omer/Desktop/Odev1/coding/mult2_to_1_32.v|
+!s90 -reportprogress|300|-work|work|-stats=none|/home/omer/Desktop/Odev1/coding/mult2_to_1_32.v|
+!i113 1
+R6
+R7
+vmult2_to_1_5
+!s110 1765909368
+!i10b 1
+!s100 QeR<>khHHW047@W2MP@;I2
+R0
+I06;[aJnLH`=Wh@5id8F@E1
+R1
+R2
+R3
+8/home/omer/Desktop/Odev1/coding/mult2_to_1_5.v
+F/home/omer/Desktop/Odev1/coding/mult2_to_1_5.v
+!i122 6
+R8
+R5
+r1
+!s85 0
+31
+!s108 1765909368.000000
+!s107 /home/omer/Desktop/Odev1/coding/mult2_to_1_5.v|
+!s90 -reportprogress|300|-work|work|-stats=none|/home/omer/Desktop/Odev1/coding/mult2_to_1_5.v|
+!i113 1
+R6
+R7
+vprocessor
+!s110 1765909361
+!i10b 1
+!s100 aWBjzW@LdJAlP4R`RibmB2
+R0
+IDzzNZX=YPno<Paolo0bE`1
+R1
+R2
+w1765908281
+8/home/omer/Desktop/Odev1/coding/processor.v
+F/home/omer/Desktop/Odev1/coding/processor.v
+!i122 4
+L0 1 179
+R5
+r1
+!s85 0
+31
+!s108 1765909361.000000
+!s107 /home/omer/Desktop/Odev1/coding/processor.v|
+!s90 -reportprogress|300|-work|work|-stats=none|/home/omer/Desktop/Odev1/coding/processor.v|
+!i113 1
+R6
+R7
+vshift
+!s110 1765909373
+!i10b 1
+!s100 XX2;Z1lf9Dd@dcO[G5lL:2
+R0
+IH2a_`c>^@0@[o=0lLEH2D1
+R1
+R2
+R3
+8/home/omer/Desktop/Odev1/coding/shift.v
+F/home/omer/Desktop/Odev1/coding/shift.v
+!i122 8
+R4
+R5
+r1
+!s85 0
+31
+!s108 1765909373.000000
+!s107 /home/omer/Desktop/Odev1/coding/shift.v|
+!s90 -reportprogress|300|-work|work|-stats=none|/home/omer/Desktop/Odev1/coding/shift.v|
+!i113 1
+R6
+R7
+vshifter
+!s110 1765909356
+!i10b 1
+!s100 QiO5[]]?iQZQn[D5<RBC40
+R0
+I;TBX34UKkkjf8zbPI?KBj3
+R1
+R2
+R3
+8/home/omer/Desktop/Odev1/coding/shift_2.v
+F/home/omer/Desktop/Odev1/coding/shift_2.v
+!i122 2
+R4
+R5
+r1
+!s85 0
+31
+!s108 1765909356.000000
+!s107 /home/omer/Desktop/Odev1/coding/shift_2.v|
+!s90 -reportprogress|300|-work|work|-stats=none|/home/omer/Desktop/Odev1/coding/shift_2.v|
+!i113 1
+R6
+R7
+vsignext
+!s110 1765909364
+!i10b 1
+!s100 aj?PFk=ka=A4[;Kz]?d6F3
+R0
+IKLDNo>07E904NMD@gdl`a0
+R1
+R2
+w1765904403
+8/home/omer/Desktop/Odev1/coding/signext.v
+F/home/omer/Desktop/Odev1/coding/signext.v
+!i122 5
+R4
+R5
+r1
+!s85 0
+31
+!s108 1765909364.000000
+!s107 /home/omer/Desktop/Odev1/coding/signext.v|
+!s90 -reportprogress|300|-work|work|-stats=none|/home/omer/Desktop/Odev1/coding/signext.v|
+!i113 1
+R6
+R7

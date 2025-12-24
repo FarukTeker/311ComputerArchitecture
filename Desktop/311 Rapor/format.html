@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CENG311 – Revised Single-Cycle Processor Report</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin-top: 50px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            margin-bottom: 40px;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        figure {
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        figcaption {
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>CENG311 – Computer Architecture</h1>
+    <h2>Revised Single-Cycle Processor Design</h2>
+    <p><b>Student ID:</b> 300201077</p>
+    <p><b>Term:</b> Fall 2025</p>
+
+    <hr>
+
+    <h2>Project Overview</h2>
+    <p>
+        This project implements a <b>revised single-cycle processor architecture</b> using <b>Verilog</b>.
+        The original processor design was extended to support additional instructions and to include
+        a <b>stack pointer overflow and underflow protection mechanism</b>.
+    </p>
+    <p>
+        The processor was verified through <b>ModelSim simulation</b>, and the entire system was documented
+
+    </p>
+
+    <h3>Assignment Requirements</h3>
+    <p>The project implements the following key requirements:</p>
+    <ul>
+        <li><b>Processor Design:</b> Revised single-cycle datapath and control units</li>
+        <li><b>Instruction Set:</b> Support for all previously implemented instructions plus new mandatory instructions:
+            <ul>
+                <li>R-type: <code>sll</code>, <code>move</code>, <code>nand</code></li>
+                <li>I-type: <code>blt</code>, <code>subi</code>, <code>addi</code>, <code>beqi</code></li>
+                <li>J-type: <code>j</code> (unconditional jump)</li>
+            </ul>
+        </li>
+        <li><b>Stack Protection:</b> Detection and prevention of stack overflow and underflow</li>
+        <li><b>Implementation:</b> Entire processor implemented in Verilog with modular design</li>
+        <li><b>Initialization:</b> Register file and data memory initialized using provided tables</li>
+    </ul>
+
+    <hr>
+
+    <h2>Table Index</h2>
+    <ul>
+        <li><a href="#isa">Table 1 – Instruction Set Architecture (ISA)</a></li>
+        <li><a href="#regfile">Table 2 – Register File Initialization</a></li>
+        <li><a href="#datamem">Table 3 – Data Memory & Stack Allocation</a></li>
+        <li><a href="#block">Figure 1 – Updated Block Diagram</a></li>
+    </ul>
+
+    <hr>
+
+    <!-- ================= TABLE 1 ================= -->
+    <h2 id="isa">Table 1. Instruction Set Architecture (ISA)</h2>
+
+    <table>
+        <tr>
+            <th>Opcode (Dec)</th>
+            <th>Opcode (Bin)</th>
+            <th>Function (Dec)</th>
+            <th>Function (Bin)</th>
+            <th>Instruction</th>
+        </tr>
+        <tr>
+            <td>100</td>
+            <td>01100100</td>
+            <td>1</td>
+            <td>000001</td>
+            <td>sll (R-type)</td>
+        </tr>
+        <tr>
+            <td>100</td>
+            <td>01100100</td>
+            <td>2</td>
+            <td>000010</td>
+            <td>move (R-type)</td>
+        </tr>
+        <tr>
+            <td>100</td>
+            <td>01100100</td>
+            <td>3</td>
+            <td>000011</td>
+            <td>nand (R-type)</td>
+        </tr>
+        <tr>
+            <td>100</td>
+            <td>01100100</td>
+            <td>4</td>
+            <td>000100</td>
+            <td>or (R-type)</td>
+        </tr>
+        <tr>
+            <td>100</td>
+            <td>01100100</td>
+            <td>5</td>
+            <td>000101</td>
+            <td>add (R-type)</td>
+        </tr>
+        <tr>
+            <td>101</td>
+            <td>01100101</td>
+            <td>X</td>
+            <td>XXXXXX</td>
+            <td>lw (I-type)</td>
+        </tr>
+        <tr>
+            <td>102</td>
+            <td>01100110</td>
+            <td>X</td>
+            <td>XXXXXX</td>
+            <td>sw (I-type)</td>
+        </tr>
+        <tr>
+            <td>103</td>
+            <td>01100111</td>
+            <td>X</td>
+            <td>XXXXXX</td>
+            <td>beq (I-type)</td>
+        </tr>
+        <tr>
+            <td>104</td>
+            <td>01101000</td>
+            <td>X</td>
+            <td>XXXXXX</td>
+            <td>blt (I-type)</td>
+        </tr>
+        <tr>
+            <td>105</td>
+            <td>01101001</td>
+            <td>X</td>
+            <td>XXXXXX</td>
+            <td>subi (I-type)</td>
+        </tr>
+        <tr>
+            <td>106</td>
+            <td>01101010</td>
+            <td>X</td>
+            <td>XXXXXX</td>
+            <td>addi (I-type)</td>
+        </tr>
+        <tr>
+            <td>107</td>
+            <td>01101011</td>
+            <td>X</td>
+            <td>XXXXXX</td>
+            <td>beqi (B-I-type)</td>
+        </tr>
+        <tr>
+            <td>108</td>
+            <td>01101100</td>
+            <td>X</td>
+            <td>XXXXXX</td>
+            <td>j (J-type)</td>
+        </tr>
+    </table>
+
+    <p>
+        This table defines the complete Instruction Set Architecture (ISA) supported by
+        the revised processor design. Both previously implemented and newly added
+        instructions are included.
+    </p>
+
+    <hr>
+
+    <!-- ================= TABLE 2 ================= -->
+    <h2 id="regfile">Table 2. Register File Initialization</h2>
+
+    <table>
+        <tr>
+            <th>Register</th>
+            <th>Role</th>
+            <th>Symbol</th>
+            <th>Initial Value</th>
+        </tr>
+        <tr>
+            <td>R0</td>
+            <td>Zero Register</td>
+            <td>$0</td>
+            <td>0</td>
+        </tr>
+        <tr>
+            <td>R1</td>
+            <td>Saved Register</td>
+            <td>$s0</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td>R2</td>
+            <td>Saved Register</td>
+            <td>$s1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td>R3</td>
+            <td>Saved Register</td>
+            <td>$s2</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td>R4</td>
+            <td>Saved Register</td>
+            <td>$s3</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td>R5</td>
+            <td>Saved Register</td>
+            <td>$s4</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td>R6</td>
+            <td>Temporary</td>
+            <td>$t0</td>
+            <td>6</td>
+        </tr>
+        <tr>
+            <td>R7</td>
+            <td>Temporary</td>
+            <td>$t1</td>
+            <td>9</td>
+        </tr>
+        <tr>
+            <td>R8</td>
+            <td>Temporary</td>
+            <td>$t2</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td>R9</td>
+            <td>Argument</td>
+            <td>$a0</td>
+            <td>0</td>
+        </tr>
+        <tr>
+            <td>R10</td>
+            <td>Argument</td>
+            <td>$a1</td>
+            <td>0</td>
+        </tr>
+        <tr>
+            <td>R11</td>
+            <td>Value</td>
+            <td>$v0</td>
+            <td>0</td>
+        </tr>
+        <tr>
+            <td>R12</td>
+            <td>Stack Base Address</td>
+            <td>$spba</td>
+            <td>40</td>
+        </tr>
+        <tr>
+            <td>R13</td>
+            <td>Stack Limit</td>
+            <td>$spl</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td>R14</td>
+            <td>Stack Pointer</td>
+            <td>$sp</td>
+            <td>0</td>
+        </tr>
+        <tr>
+            <td>R15</td>
+            <td>Return Address</td>
+            <td>$ra</td>
+            <td>-</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <!-- ================= TABLE 3 ================= -->
+    <h2 id="datamem">Table 3. Data Memory & Stack Allocation</h2>
+
+    <table>
+        <tr>
+            <th>Memory Range</th>
+            <th>Initial Value</th>
+        </tr>
+        <tr>
+            <td>R0 – R3</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td>R4 – R7</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td>R8 – R11</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td>R12 – R15</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td>R16 – R19</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td>R20 – R23</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td>R24 – R27</td>
+            <td>56</td>
+        </tr>
+        <tr>
+            <td>R28 – R31</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td>R32 – R35</td>
+            <td>34</td>
+        </tr>
+        <tr>
+            <td>R36 – R63</td>
+            <td>0</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <!-- ================= BLOCK DIAGRAM ================= -->
+    <h2 id="block">Figure 1. Updated Single-Cycle Processor Datapath</h2>
+
+    <figure>
+        <img src="44d256d9-804c-4942-9f6b-d631b7e0bd3b-md.jpeg" alt="Updated Processor Datapath"
+            style="width:100%; max-width:1000px;">
+        <figcaption>
+            Figure 1. Updated Single-Cycle Processor Datapath with Stack Protection Logic.
+        </figcaption>
+    </figure>
+
+    <h3>Stack Protection Logic</h3>
+    <p>
+        The updated datapath integrates stack pointer protection by monitoring the stack
+        pointer (<code>$sp</code>), stack base address (<code>$spba</code>), and stack limit (<code>$spl</code>).
+    </p>
+
+    <h4>Stack Bounds Calculation</h4>
+    <p>The stack lower bound is computed as:</p>
+    <pre
+        style="background-color: #f5f5f5; padding: 10px; border-left: 3px solid #333;">stack_low = spba - (spl << 2)</pre>
+
+    <h4>Error Detection Conditions</h4>
+    <p><b>Overflow condition:</b> Detected when the stack pointer exceeds the base address:</p>
+    <pre style="background-color: #f5f5f5; padding: 10px; border-left: 3px solid #d00;">sp > spba</pre>
+
+    <p><b>Underflow condition:</b> Detected when the stack pointer goes below the lower bound:</p>
+    <pre style="background-color: #f5f5f5; padding: 10px; border-left: 3px solid #d00;">sp < stack_low</pre>
+
+    <h4>Protection Mechanism</h4>
+    <p>When an overflow or underflow condition is detected:</p>
+    <ul>
+        <li><code>MemWrite</code> signal is disabled to prevent invalid memory writes</li>
+        <li><code>RegWrite</code> signal is disabled to prevent register corruption</li>
+        <li>Safe control signals (<code>safe_memwrite</code>, <code>safe_regwrite</code>) are integrated into the
+            datapath</li>
+    </ul>
+    <p>
+        This ensures memory and register safety during stack operations, preventing data corruption
+        from illegal stack accesses.
+    </p>
+
+    <hr>
+
+    <!-- ================= IMPLEMENTATION ================= -->
+    <h2>Implementation Details</h2>
+
+    <h3>Verilog Modules</h3>
+    <p>The processor was implemented using the following modular Verilog design:</p>
+    <ul>
+        <li><code>processor.v</code> – Top-level processor module</li>
+        <li><code>alu32.v</code> – 32-bit Arithmetic Logic Unit</li>
+        <li><code>control.v</code> – Main control unit</li>
+        <li><code>alucont.v</code> – ALU control unit</li>
+        <li><code>signext.v</code> – Sign extension unit</li>
+        <li><code>shift.v</code> – Shift operation unit</li>
+        <li>Multiplexer modules for data path routing</li>
+    </ul>
+    <p>All modules compiled and executed successfully in <b>ModelSim</b>.</p>
+
+    <h3>Initialization Files</h3>
+    <ul>
+        <li><code>initReg.dat</code> – Register file initialization (based on Table 2)</li>
+        <li><code>initDM.dat</code> – Data memory initialization (based on Table 3)</li>
+        <li><code>initIM.dat</code> – Instruction memory with encoded instructions (based on ISA)</li>
+    </ul>
+
+    <hr>
+
+    <!-- ================= SIMULATION ================= -->
+    <h2>Simulation and Verification</h2>
+
+    <h3>Simulation Environment</h3>
+    <p>
+        The processor was simulated using <b>ModelSim</b>. Instruction memory, data memory, and
+        register file were initialized using external <i>.dat</i> files.
+    </p>
+
+    <h3>Monitored Signals</h3>
+    <p>During simulation, the following signals were monitored to verify correct operation:</p>
+    <ul>
+        <li>Program Counter (PC)</li>
+        <li>Register file contents (all 16 registers)</li>
+        <li>Data memory contents</li>
+        <li>Stack Pointer (<code>$sp</code>)</li>
+        <li>Stack overflow signal</li>
+        <li>Stack underflow signal</li>
+        <li>Memory write enable (<code>MemWrite</code>)</li>
+        <li>Register write enable (<code>RegWrite</code>)</li>
+    </ul>
+
+    <h3>Verification Results</h3>
+    <p>
+        Multiple instruction blocks were executed to verify correct operation of:
+    </p>
+    <ul>
+        <li>All R-type instructions (<code>sll</code>, <code>move</code>, <code>nand</code>, <code>or</code>,
+            <code>add</code>)
+        </li>
+        <li>All I-type instructions (<code>lw</code>, <code>sw</code>, <code>beq</code>, <code>blt</code>,
+            <code>subi</code>, <code>addi</code>, <code>beqi</code>)
+        </li>
+        <li>J-type jump instruction (<code>j</code>)</li>
+        <li>Stack protection mechanism (overflow and underflow detection)</li>
+    </ul>
+    <p>
+        The simulation confirmed that <b>invalid stack accesses are safely prevented</b>, while
+        valid memory operations execute correctly. Overflow and underflow signals were properly
+        triggered when stack boundaries were violated.
+    </p>
+
+    <hr>
+
+    <h2>Conclusion</h2>
+
+    <p>
+        In this project, a revised single-cycle processor was designed and implemented
+        using Verilog. The processor supports an extended instruction set and includes
+        robust stack protection mechanisms. Simulation results confirm correct execution
+        of all instructions and effective detection of stack overflow and underflow
+        conditions.
+    </p>
+
+    <h3>Project Status</h3>
+    <p>All assignment requirements have been fully implemented and verified:</p>
+    <ul>
+        <li>✔ Revised processor design with extended datapath</li>
+        <li>✔ Extended instruction set (13 instructions total)</li>
+        <li>✔ Stack overflow and underflow protection</li>
+        <li>✔ Successful ModelSim simulation</li>
+        <li>✔ Complete documentation and report</li>
+    </ul>
+
+
+
+
+    <ul>
+        <li>Overflow and underflow signals are highlighted during stack operations</li>
+        <li>Stack protection behavior can be observed during <code>lw</code> and <code>sw</code> operations</li>
+        <li>All instruction types have been verified through simulation</li>
+    </ul>
+
+</body>
+
+</html>
