@@ -1,0 +1,76 @@
+# macOS / editor clutter
+.DS_Store
+.localized
+.CFUserTextEncoding
+.zcompdump*
+.zsh_history
+.zsh_sessions/
+.viminfo
+
+# local shell / user config
+.gitconfig
+.zprofile
+.zshrc
+.python_history
+.emulator_console_auth_token
+
+# tool and cache directories
+.android/
+.antigravity/
+.cache/
+.claude/
+.claude.json
+.config/
+.copilot/
+.cursor/
+.docker/
+.gemini/
+.gradle/
+.idlerc/
+.ipython/
+.keras/
+.langgraph_api/
+.local/
+.matplotlib/
+.npm/
+.nvm/
+.ollama/
+.pyenv/
+.sonarlint/
+.ssh/
+.streamlit/
+.swiftpm/
+.vscode/
+
+# home-level personal folders not intended for this repo
+Applications/
+Documents/
+Downloads/
+HTML/
+Library/
+Movies/
+Music/
+Pictures/
+Public/
+Zotero/
+
+# default ignore for desktop clutter in this home-root repo
+Desktop/*
+
+# keep tracked research/project folders visible
+!Desktop/adaptive_time_quantum_aging_papers/
+!Desktop/adaptive_time_quantum_aging_papers/**
+!Desktop/311 Rapor/
+!Desktop/311 Rapor/**
+
+# miscellaneous top-level clutter
+218 ödev kısmı .py
+import numpy as np.py
+intelligent-media-crawler/
+lora-studio/
+my-whatsapp-bot/
+new_backup.sh.save
+nltk_data/
+tensorflow_datasets/
+tf-env/
+Turing Machine/
