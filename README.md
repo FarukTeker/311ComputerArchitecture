@@ -35,6 +35,7 @@ The research folder includes:
 For details, see:
 
 - `Desktop/adaptive_time_quantum_aging_papers/README.md`
+- `Desktop/adaptive_time_quantum_aging_papers/meta/PROJECT_SUMMARY.md`
 
 ## Status
 

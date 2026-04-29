@@ -17,45 +17,51 @@ to study whether such a scheduler can achieve either:
 
 ## Folder Structure
 
-- `time_quantum/`
-  Open-access papers collected on adaptive or dynamic time quantum scheduling.
+- `docs/`
+  Documentation, proposals, and supporting research notes.
 
-- `hardware_aging/`
-  Open-access papers collected on hardware aging, reliability-aware control, thermal management, and related methods.
+- `papers/`
+  Open-access papers grouped by topic.
 
-- `notes/`
-  Generated notes, proposal drafts, detailed reports, experiment planning, and final proposal documents.
+- `meta/`
+  Short project summary, future work list, and repository-facing helper texts.
 
 ## Key Outputs
 
-Inside `notes/`, the most important final outputs are:
+Inside `docs/proposals/`, the most important final outputs are:
 
-- `aging_aware_adaptive_quantum_proposal_university_tr.pdf`
+- `docs/proposals/aging_aware_adaptive_quantum_proposal_university_tr.pdf`
   Final Turkish university-style proposal.
 
-- `aging_aware_adaptive_quantum_proposal_university_en.pdf`
+- `docs/proposals/aging_aware_adaptive_quantum_proposal_university_en.pdf`
   Final English university-style proposal.
 
-- `proposal_university_tr.tex`
+- `docs/proposals/proposal_university_tr.tex`
   Turkish LaTeX source.
 
-- `proposal_university_en.tex`
+- `docs/proposals/proposal_university_en.tex`
   English LaTeX source.
 
-- `BIBLIOGRAPHY.md`
+- `docs/notes/BIBLIOGRAPHY.md`
   Collected bibliography and link summary.
 
-- `DETAILED_REPORT_TR.md`
+- `docs/notes/DETAILED_REPORT_TR.md`
   Detailed Turkish technical synthesis of the literature.
 
-- `THESIS_PROJECT_PROPOSAL_TR.md`
+- `docs/notes/THESIS_PROJECT_PROPOSAL_TR.md`
   Early thesis/project proposal notes in Turkish.
 
-- `EXPERIMENT_PLAN_AND_SIMULATOR_TR.md`
+- `docs/notes/EXPERIMENT_PLAN_AND_SIMULATOR_TR.md`
   Experiment design and simulator planning notes.
 
-- `README_FINAL.md`
+- `docs/notes/README_FINAL.md`
   Final notes directory summary.
+
+Additional project-facing overview files:
+
+- `meta/PROJECT_SUMMARY.md`
+- `meta/FUTURE_WORK.md`
+- `meta/GITHUB_ABOUT.md`
 
 ## Proposal Scope
 
@@ -75,6 +81,11 @@ proposed scheduler will always outperform classical methods; rather, it aims to 
 - when aging-aware adaptive scheduling helps
 - when the overhead becomes too costly
 - how the performance-reliability trade-off changes across workloads
+
+## Repository-Friendly Layout
+
+This folder is now organized closer to a standalone research repository layout, so that it can be
+split into its own repository later if needed with minimal restructuring.
 
 ## Notes
 
