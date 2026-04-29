@@ -1,0 +1,545 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{pgfgantt}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=blue,pdftitle={University Style Proposal EN}}
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Research Proposal}
+\rhead{Aging-Aware Adaptive Scheduling}
+\cfoot{\thepage}
+
+\definecolor{deepblue}{RGB}{0,51,102}
+\definecolor{accentblue}{RGB}{0,102,204}
+\titleformat{\section}{\large\bfseries\color{deepblue}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\color{accentblue}}{\thesubsection.}{0.6em}{}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+{\Large \textbf{Izmir Institute of Technology}}\\[0.8em]
+{\large Faculty of Engineering}\\
+{\large Computer Engineering}\\[2.5em]
+
+{\LARGE \textbf{THESIS / PROJECT PROPOSAL}}\\[1.0em]
+{\Large \textbf{AI-Driven Aging-Aware Adaptive Time Quantum Scheduling}}\\[0.4em]
+{\large Reliable and Efficient Scheduler Design with Cross-Layer Reliability Feedback}\\[2.0em]
+
+\begin{tabular}{>{\bfseries}p{4.8cm}p{8.8cm}}
+Student Name: & Omer Faruk Teker \\
+Student ID: & To be specified \\
+Supervisor: & To be specified \\
+Program: & BSc \\
+Department: & Computer Engineering \\
+Submission Date: & April 2026 \\
+\end{tabular}
+
+\vfill
+\begin{minipage}{0.92\textwidth}
+\small
+Note: Bracketed fields are left as placeholders for university, student, and supervisor information.
+This version is prepared as a formal academic proposal with in-text citations and references.
+\end{minipage}
+\end{center}
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+
+This research proposal aims to unify two lines of work that are usually treated separately:
+\textit{adaptive time quantum selection} in CPU scheduling and \textit{aging-aware runtime control}
+in hardware reliability management. Existing Round Robin variants mainly optimize waiting time,
+turnaround time, and context-switch overhead through workload-aware quantum adaptation, while
+reliability-aware systems focus on thermal management, DVFS, task remapping, and online monitoring
+to preserve hardware lifetime \cite{behera2010,noon2011,marr2022,srinivasan2004,kumar2011}.
+However, only limited work directly incorporates aging and thermal feedback into scheduler-level
+time quantum control.
+
+The proposed research introduces an \textit{aging-aware adaptive scheduler} that combines queue-state,
+thermal telemetry, and aging estimates within a single control loop. The methodology is organized in
+three stages: (i) heuristic aging-penalized quantum selection, (ii) physics-informed supervised learning
+for quantum prediction, and (iii) contextual bandit or reinforcement learning for long-horizon policy
+optimization. The core hypothesis is that such a scheduler can achieve either lower aging accumulation
+at comparable performance or higher performance under the same aging budget.
+
+\textbf{Keywords:} adaptive scheduling, Round Robin, time quantum, hardware aging,\\ reliability-aware control, reinforcement learning
+
+\newpage
+\pagenumbering{arabic}
+\onehalfspacing
+
+\section{Introduction}
+
+Time quantum selection is one of the key design decisions in time-shared schedulers. When the quantum is
+too small, context-switch overhead increases and throughput may drop. When it is too large, response time
+and interactivity suffer. For this reason, a large body of dynamic Round Robin literature has proposed
+workload-aware quantum selection strategies based on mean, median, quartile, or percentile statistics
+\cite{behera2010,noon2011,marr2022,zohora2024}.
+
+At the same time, scheduler decisions indirectly affect hardware lifetime. Imbalanced core usage, persistent
+hotspots, long periods of high utilization, and strong thermal gradients can accelerate degradation mechanisms
+such as NBTI, PBTI, HCI, electromigration, and thermal cycling \cite{srinivasan2004,agarwal2007,kumar2011}.
+Despite this connection, scheduling literature and reliability-aware runtime control literature have largely
+evolved independently.
+
+This proposal addresses that gap by asking whether a scheduler can select time quantum values using not only
+queue-state information but also thermal and aging feedback.
+
+\section{Problem Statement}
+
+The central problem of this research can be stated as follows:
+
+\begin{quote}
+Fixed or purely queue-statistics-driven dynamic time quantum selection does not explicitly account for the
+long-term hardware aging and reliability cost of scheduling decisions. Therefore, a new scheduler-level control
+mechanism is needed to jointly optimize performance, fairness, thermal behavior, and projected lifetime.
+\end{quote}
+
+This problem is particularly important in multicore systems, where task placement, context-switch rhythm, and
+core utilization asymmetry have temporal and spatial effects on degradation behavior.
+
+\section{Research Questions and Hypotheses}
+
+\subsection{Research Questions}
+
+\begin{enumerate}[leftmargin=*]
+\item Can time quantum selection achieve a better performance-reliability trade-off when queue-state and thermal/aging telemetry are used together?
+\item Can an aging-aware adaptive scheduler produce lower aging scores than fixed RR and classical dynamic RR under similar throughput levels?
+\item Can physics-informed supervised learning or RL-based policies generalize better than heuristic policies under workload variation?
+\item Does extending the scheduler action space with migration and DVFS lead to measurable projected lifetime improvements?
+\end{enumerate}
+
+\subsection{Hypotheses}
+
+\begin{enumerate}[leftmargin=*]
+\item Queue-aware and aging-aware hybrid schedulers provide a better latency-reliability trade-off than traditional dynamic RR schedulers.
+\item Incorporating thermal and aging state into quantum selection reduces hotspot behavior and cumulative stress imbalance.
+\item Physics-informed supervised models can select better time quanta than purely statistical schedulers.
+\item RL-based control can reduce long-term aging cost when combined with suitable rewards and safety constraints.
+\end{enumerate}
+
+\section{Significance and Expected Contribution}
+
+This research is significant for four reasons:
+
+\begin{enumerate}[leftmargin=*]
+\item It bridges scheduling literature and aging-aware reliability literature.
+\item It treats time quantum selection as both a performance problem and a hardware health problem.
+\item It compares heuristic, supervised learning, and RL-based methods in a shared simulation environment.
+\item It directly tests the claims of ``same performance, less aging'' and ``same aging budget, better performance.''
+\end{enumerate}
+
+\section{Literature Review}
+
+\subsection{Adaptive Time Quantum Scheduling}
+
+Dynamic quantum selection has long been studied in the context of Round Robin scheduling. Behera et al.
+reported improvements with a re-adjusted dynamic quantum policy \cite{behera2010}. Noon et al.
+proposed a mean-based quantum computation strategy \cite{noon2011}, while more recent work has explored
+median-average and percentile-based approaches \cite{marr2022,zohora2024}. Although these studies demonstrate
+the value of workload-aware quantum selection, they generally omit thermal and aging effects.
+
+\subsection{AI-Driven Scheduling}
+
+Machine learning is increasingly used in scheduling research, but direct AI-driven CPU quantum selection remains
+relatively sparse. Chitaliya et al.
+framed quantum optimization as a prediction problem and evaluated ML-based quantum estimation \cite{chitaliya2023}.
+Still, few works directly address scheduler-level reliability-aware quantum control.
+
+\subsection{Hardware Aging and Reliability-Aware Control}
+
+Srinivasan et al.
+established the importance of lifetime reliability-aware microprocessor design \cite{srinivasan2004}. Agarwal et al.
+highlighted the role of failure prediction in transistor aging management \cite{agarwal2007}, while Kumar et al.
+developed adaptive techniques to compensate for aging-induced performance degradation \cite{kumar2011}. Reliability-aware
+energy management and RL-based DVFS demonstrate that runtime performance-lifetime trade-offs can indeed be controlled
+at higher system layers \cite{aydin2009,yeganeh2021}.
+
+\subsection{Research Gap}
+
+The key gaps in the literature are the following:
+
+\begin{itemize}[leftmargin=*]
+\item Quantum selection studies do not typically use hardware aging information.
+\item Aging-aware runtime control studies rarely optimize scheduler quantum directly.
+\item AI-based scheduler research rarely adopts a reliability-centric objective.
+\end{itemize}
+
+This proposal is positioned precisely at this intersection.
+
+\section{Proposed Methodology}
+
+\subsection{General Framework}
+
+The proposed system consists of four components:
+
+\begin{enumerate}[leftmargin=*]
+\item Workload generator or trace source
+\item Scheduler engine
+\item Thermal estimator and aging estimator
+\item Logging, evaluation, and analysis layer
+\end{enumerate}
+
+The policy layer will use queue-state, thermal telemetry, and aging estimates to generate quantum,
+migration, and optionally DVFS decisions.
+
+\subsection{Method 1: Heuristic Aging-Penalized Quantum}
+
+The first method is an interpretable baseline:
+
+\[
+Q_t = f(S^{queue}_t) - \lambda_1 g(S^{thermal}_t) - \lambda_2 h(S^{aging}_t)
+\]
+
+Here, $f$ produces a base quantum using mean, median, or quartile statistics, while $g$ and $h$ provide
+penalty terms derived from temperature, hotspot severity, thermal gradient, cumulative stress, and estimated
+slack loss.
+
+\subsection{Method 2: Physics-Informed Supervised Learning}
+
+In the second stage, optimal time quantum selection is formulated as a prediction problem. For each workload
+window, candidate quantum values are evaluated through a combined objective:
+
+\[
+J = w_1 \cdot \text{Latency} + w_2 \cdot \text{ContextSwitchCost} + w_3 \cdot \text{ThermalCost} + w_4 \cdot \text{AgingCost}
+\]
+
+The quantum that minimizes $J$ becomes the training label. Models such as Random Forest, XGBoost, and LightGBM
+will then be used to predict quantum values. The approach is called physics-informed because both labeling and
+feature design explicitly encode thermal and aging meaning.
+
+\subsection{Method 3: Contextual Bandit and Reinforcement Learning}
+
+In the third stage, scheduling is treated as a sequential decision problem. The state space includes queue length,
+remaining burst statistics, per-core utilization, current temperature, temperature gradient, cumulative aging score,
+previous quantum values, and migration history. A representative reward function is:
+
+\[
+R_t = \alpha \cdot \text{Throughput}_t - \beta \cdot \text{ResponseTime}_t - \gamma \cdot \text{ContextSwitches}_t - \delta \cdot \text{HotspotPenalty}_t - \eta \cdot \text{AgingIncrement}_t
+\]
+
+Algorithms such as DQN, Double DQN, or PPO may be used. All learned policies will be deployed under a safety filter
+that enforces peak-temperature thresholds, starvation prevention, and migration-rate limits.
+
+\section{Experimental Design}
+
+\subsection{Simulation Environment}
+
+The initial research platform will be a Python-based discrete-event scheduler simulator. This choice supports rapid
+experimentation, reproducibility, and fair comparison of policy variants. Integration with gem5 or Sniper may be
+considered in later phases.
+
+\subsection{Workload Classes}
+
+\begin{longtable}{@{}p{3.3cm}p{2.1cm}p{8.0cm}@{}}
+\caption{Planned workload classes.}\\
+\toprule
+\textbf{Class} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{l}{\small\itshape (continued)}\\
+\toprule
+\textbf{Class} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+Short CPU-bound & Synthetic & Short bursts; high response-time sensitivity \\
+Long CPU-bound & Synthetic & Long bursts; strong sensitivity to quantum size \\
+Heavy-tail bursts & Synthetic & Pareto-like burst distribution \\
+Bursty arrivals & Synthetic & Clustered arrivals that create queue pressure \\
+Periodic tasks & Synthetic & Real-time-like periodic workloads \\
+Hot-core stress & Scenario & Workload shaped to accumulate stress on one core \\
+Balanced multicore mix & Scenario & Suitable for observing wear-leveling behavior \\
+Trace-driven mix & Realistic & Derived from scheduler traces if available \\
+\end{longtable}
+
+\subsection{Baselines}
+
+\begin{enumerate}[leftmargin=*]
+\item Fixed Round Robin
+\item Mean-based dynamic RR
+\item Median/quartile-based dynamic RR
+\item Thermal-aware scheduler
+\item Aging-aware but non-AI scheduler
+\item Proposed heuristic hybrid scheduler
+\item Proposed supervised scheduler
+\item Proposed bandit / RL scheduler
+\end{enumerate}
+
+\subsection{Thermal and Aging Models}
+
+The thermal model is defined in a simple but consistent form:
+
+\[
+T_{t+1} = aT_t + bU_t + cS_t + dT_{amb}
+\]
+
+where $U_t$ is utilization, $S_t$ is a switching proxy, and $T_{amb}$ is ambient temperature.
+The aging increment is modeled as:
+
+\[
+\Delta A_t = k_1 e^{\rho T_t} + k_2 U_t^p + k_3 C_t
+\]
+
+where $C_t$ captures additional stress related to context-switch or switching-rate behavior.
+In later phases, BTI-like, HCI-like, EM-proxy, and thermal-cycling components may be tracked separately.
+
+\section{Evaluation Metrics}
+
+\subsection{Scheduler Performance}
+
+\begin{itemize}[leftmargin=*]
+\item Average waiting time
+\item Average turnaround time
+\item Average response time
+\item Throughput
+\item Context-switch count
+\item Fairness and starvation indicators
+\end{itemize}
+
+\subsection{Reliability and Thermal Metrics}
+
+\begin{itemize}[leftmargin=*]
+\item Peak temperature
+\item Mean temperature per core
+\item Thermal gradient
+\item Thermal-cycling severity
+\item Cumulative aging score
+\item Projected lifetime proxy
+\end{itemize}
+
+\subsection{Primary Comparative Claims}
+
+The proposal directly tests two core claims:
+
+\begin{itemize}[leftmargin=*]
+\item lower aging accumulation at comparable performance
+\item better performance under the same aging budget
+\end{itemize}
+
+\section{Illustrative Scenario and Objective Expectation Framework}
+
+This section is added to make the proposal more concrete under a realistic operating scenario and to present both
+the expected benefits and the possible limitations in an objective way.
+
+\subsection{Illustrative Scenario}
+
+Consider a four-core system with a mixed ready queue containing both short and long CPU-bound jobs. Assume that,
+within a given scheduling window, the following conditions hold:
+
+\begin{itemize}[leftmargin=*]
+\item Core 1 has been under high utilization for a long period.
+\item Core 1 temperature is higher than the others.
+\item The aging score of Core 1 is increasing faster than the rest.
+\item Queue occupancy is high, meaning that the scheduler is under performance pressure.
+\end{itemize}
+
+In this situation, a conventional dynamic RR scheduler would likely increase the quantum in order to reduce queue
+pressure, but because it does not incorporate hardware health information, it may further intensify the stress on the
+same core. By contrast, the proposed aging-aware scheduler would evaluate one or more of the following actions jointly:
+
+\begin{enumerate}[leftmargin=*]
+\item increase the quantum according to queue pressure, but limit that increase via thermal/aging penalties
+\item migrate jobs to a less stressed core
+\item use DVFS to move the stressed core into a more conservative operating mode if needed
+\item filter migration or quantum decisions if fairness constraints are threatened
+\end{enumerate}
+
+This scenario makes clear that the proposed system is intended to answer not only ``which job should run and for how long,''
+but also ``what is the hardware-health consequence of this scheduling decision?''
+
+\subsection{Potential Positive Outcomes}
+
+Under such a scenario, the following positive outcomes may be expected:
+
+\begin{itemize}[leftmargin=*]
+\item reduction in hotspot behavior on specific cores
+\item more balanced core-wise aging score distribution
+\item lower aging accumulation at comparable throughput relative to fixed RR or queue-only dynamic RR
+\item lower thermal gradients and peak temperatures
+\item improved projected lifetime proxy in long-running experiments
+\end{itemize}
+
+\subsection{Potential Negative Outcomes and Limitations}
+
+For an objective evaluation, the proposal must also acknowledge the possibility of limited or negative outcomes:
+
+\begin{itemize}[leftmargin=*]
+\item migration and policy-computation overhead may increase total latency
+\item overly aggressive aging protection may hurt throughput or turnaround time
+\item thermal telemetry alone may not fully represent aging behavior, making the proxy model incomplete
+\item RL-based policies may be sensitive to training data and reward weights
+\item benefits observed in simulation may shrink in real-system deployment
+\item for some workload families, classical dynamic RR may already perform well enough that additional gains are small
+\end{itemize}
+
+\subsection{Objective Success Criteria}
+
+The work should be considered successful only if it can demonstrate outcomes such as:
+
+\begin{enumerate}[leftmargin=*]
+\item statistically meaningful aging-score reduction under comparable throughput
+\item lower waiting time or turnaround time under the same aging budget
+\item clear reduction in peak temperature or hotspot count
+\item consistent improvement across multiple workload classes
+\end{enumerate}
+
+If these criteria are not fully satisfied, the study may still make a valuable contribution by clearly identifying the
+conditions under which scheduler-level aging-aware control is beneficial and the conditions under which overhead dominates.
+
+\section{Expected Challenges and Risk Mitigation}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+\textbf{Risk} & \textbf{Issue} & \textbf{Mitigation Strategy} \\
+\midrule
+Simplified aging model & Limited physical realism & Sensitivity analysis, alternative proxies, parameter sweeps \\
+Synthetic workload bias & Incomplete representation of real behavior & Trace-driven workloads and multiple distribution families \\
+RL instability & Reward sensitivity and training difficulty & Establish heuristic and supervised baselines first \\
+Policy overhead & Control cost may offset benefits & Discrete action space and sparse update intervals \\
+Fairness degradation & Aging protection may hurt some tasks & Fairness penalties and starvation bounds \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Work Plan and Timeline}
+
+\begin{center}
+\begin{ganttchart}[
+    hgrid,
+    vgrid,
+    time slot format=isodate-yearmonth,
+    x unit=0.95cm,
+    y unit title=0.6cm,
+    y unit chart=0.7cm,
+    title/.append style={fill=deepblue!10},
+    bar/.append style={fill=accentblue!60},
+    bar height=0.55
+]{2026-05}{2026-11}
+\gantttitlecalendar{year, month}\\
+\ganttbar{Literature consolidation and proposal finalization}{2026-05}{2026-05}\\
+\ganttbar{Baseline scheduler simulator}{2026-05}{2026-06}\\
+\ganttbar{Thermal and aging model integration}{2026-06}{2026-07}\\
+\ganttbar{Heuristic hybrid scheduler}{2026-07}{2026-08}\\
+\ganttbar{Dataset generation and labeling}{2026-08}{2026-09}\\
+\ganttbar{Supervised learning experiments}{2026-09}{2026-10}\\
+\ganttbar{Bandit / RL experiments}{2026-10}{2026-11}\\
+\ganttbar{Ablation, analysis, and final writing}{2026-11}{2026-11}
+\end{ganttchart}
+\end{center}
+
+\section{Expected Outcomes}
+
+The expected outcome is that the proposed scheduler will demonstrate a better performance-reliability trade-off
+than conventional schedulers. The strongest experimental outcomes would be:
+
+\begin{enumerate}[leftmargin=*]
+\item significant aging-score reduction under comparable throughput
+\item lower waiting/turnaround time under the same aging limit
+\item improved peak temperature and hotspot behavior
+\item more consistent policy behavior across workload families
+\end{enumerate}
+
+However, an objective evaluation must also report the following possibilities:
+
+\begin{itemize}[leftmargin=*]
+\item gains may be small for some workloads
+\item some policies may reduce aging while worsening latency
+\item the best-performing policy and the most reliability-friendly policy may not be the same
+\item the RL-based version may not always outperform heuristic or supervised variants
+\end{itemize}
+
+Therefore, the purpose of the study is not merely to claim that the proposed method is universally best, but rather to
+show under which conditions it provides advantages, under which conditions it introduces cost, and how the trade-off
+surface is shaped.
+
+\section{Conclusion}
+
+This proposal presents a detailed and feasible research framework for bridging adaptive time quantum scheduling and
+aging-aware runtime control. The proposed system does not treat quantum selection purely as a performance problem;
+it explicitly incorporates hardware health into the decision process. In this sense, the work has the potential to
+make a meaningful contribution at the intersection of operating systems, computer architecture, and AI for systems.
+
+\newpage
+\begin{thebibliography}{99}
+
+\bibitem{behera2010}
+H. S. Behera, R. K. Mohanty, and D. Nayak,
+``A New Proposed Dynamic Quantum with Re-Adjusted Round Robin Scheduling Algorithm and Its Performance Analysis,''
+\textit{International Journal of Computer Applications}, 2010.
+
+\bibitem{noon2011}
+A. Noon, A. Kalakech, and S. Kadry,
+``A New Round Robin Based Scheduling Algorithm for Operating Systems: Dynamic Quantum Using the Mean Average,''
+arXiv preprint arXiv:1111.5348, 2011.
+
+\bibitem{marr2022}
+Sakshi, C. Sharma, S. Sharma, S. Kautish, S. A. M. Alsallami, E. M. Khalil, and A. W. Mohamed,
+``A New Median-Average Round Robin Scheduling Algorithm,''
+\textit{Alexandria Engineering Journal}, 2022.
+
+\bibitem{zohora2024}
+M. F. Zohora, F. Farhin, and M. S. Kaiser,
+``An Enhanced Round Robin Using Dynamic Time Quantum for Real-Time Asymmetric Burst Length Processes,''
+\textit{PLOS ONE}, 2024.
+
+\bibitem{chitaliya2023}
+P. Chitaliya et al.,
+``Time Quantum Optimization in Round Robin Algorithm,''
+\textit{NMITCON}, 2023.
+
+\bibitem{srinivasan2004}
+J. Srinivasan et al.,
+``The Case for Lifetime Reliability-Aware Microprocessors,''
+\textit{ISCA}, 2004.
+
+\bibitem{agarwal2007}
+M. Agarwal et al.,
+``Circuit Failure Prediction and Its Application to Transistor Aging,''
+\textit{VTS}, 2007.
+
+\bibitem{aydin2009}
+H. Aydin and D. Zhu,
+``Reliability-Aware Energy Management for Periodic Real-Time Tasks,''
+\textit{IEEE Transactions on Computers}, 2009.
+
+\bibitem{kumar2011}
+S. V. Kumar, C. H. Kim, and S. S. Sapatnekar,
+``Adaptive Techniques for Overcoming Performance Degradation Due to Aging in CMOS Circuits,''
+\textit{IEEE Transactions on VLSI Systems}, 2011.
+
+\bibitem{yeganeh2021}
+A. Yeganeh-Khaksar et al.,
+``Ring-DVFS: Reliability-Aware Reinforcement Learning-Based DVFS for Real-Time Embedded Systems,''
+\textit{IEEE Embedded Systems Letters}, 2021.
+
+\end{thebibliography}
+
+\end{document}

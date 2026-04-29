@@ -1,0 +1,36 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{Abstract}{ii}{Doc-Start}%
+\contentsline {section}{\numberline {1}Introduction}{1}{section.1}%
+\contentsline {section}{\numberline {2}Problem Statement}{1}{section.2}%
+\contentsline {section}{\numberline {3}Research Questions and Hypotheses}{1}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Research Questions}{1}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Hypotheses}{2}{subsection.3.2}%
+\contentsline {section}{\numberline {4}Significance and Expected Contribution}{2}{section.4}%
+\contentsline {section}{\numberline {5}Literature Review}{2}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Adaptive Time Quantum Scheduling}{2}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}AI-Driven Scheduling}{3}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Hardware Aging and Reliability-Aware Control}{3}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Research Gap}{3}{subsection.5.4}%
+\contentsline {section}{\numberline {6}Proposed Methodology}{3}{section.6}%
+\contentsline {subsection}{\numberline {6.1}General Framework}{3}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Method 1: Heuristic Aging-Penalized Quantum}{4}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Method 2: Physics-Informed Supervised Learning}{4}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Method 3: Contextual Bandit and Reinforcement Learning}{4}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Experimental Design}{4}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Simulation Environment}{5}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Workload Classes}{5}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Baselines}{5}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Thermal and Aging Models}{5}{subsection.7.4}%
+\contentsline {section}{\numberline {8}Evaluation Metrics}{6}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Scheduler Performance}{6}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Reliability and Thermal Metrics}{6}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Primary Comparative Claims}{6}{subsection.8.3}%
+\contentsline {section}{\numberline {9}Illustrative Scenario and Objective Expectation Framework}{7}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Illustrative Scenario}{7}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Potential Positive Outcomes}{7}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Potential Negative Outcomes and Limitations}{8}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}Objective Success Criteria}{8}{subsection.9.4}%
+\contentsline {section}{\numberline {10}Expected Challenges and Risk Mitigation}{8}{section.10}%
+\contentsline {section}{\numberline {11}Work Plan and Timeline}{8}{section.11}%
+\contentsline {section}{\numberline {12}Expected Outcomes}{9}{section.12}%
+\contentsline {section}{\numberline {13}Conclusion}{10}{section.13}%

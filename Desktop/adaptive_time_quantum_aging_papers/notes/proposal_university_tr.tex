@@ -1,0 +1,544 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{turkish}
+\setmainfont{Times New Roman}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{pgfgantt}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=blue,pdftitle={Universite Tarzi Proposal TR}}
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Research Proposal}
+\rhead{Aging-Aware Adaptive Scheduling}
+\cfoot{\thepage}
+
+\definecolor{deepblue}{RGB}{0,51,102}
+\definecolor{accentblue}{RGB}{0,102,204}
+\titleformat{\section}{\large\bfseries\color{deepblue}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\color{accentblue}}{\thesubsection.}{0.6em}{}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+{\Large \textbf{Izmir Yuksek Teknoloji Enstitusu}}\\[0.8em]
+{\large Muhendislik Fakultesi}\\
+{\large Bilgisayar Muhendisligi}\\[2.5em]
+
+{\LARGE \textbf{TEZ / PROJE ONERISI}}\\[1.0em]
+{\Large \textbf{Yapay Zeka Destekli Aging-Aware Adaptive Time Quantum Scheduling}}\\[0.4em]
+{\large Cross-Layer Reliability Feedback ile Guvenilir ve Verimli Scheduler Tasarimi}\\[2.0em]
+
+\begin{tabular}{>{\bfseries}p{4.8cm}p{8.8cm}}
+Ogrenci Adi Soyadi: & [Ad Soyad] \\
+Ogrenci Adi Soyadi: & Omer Faruk Teker \\
+Ogrenci Numarasi: & Belirtilecek \\
+Danisman: & Belirtilecek \\
+Program: & Lisans \\
+Ana Bilim Dali: & Bilgisayar Muhendisligi \\
+Teslim Tarihi: & April 2026 \\
+\end{tabular}
+
+\vfill
+\begin{minipage}{0.92\textwidth}
+\small
+Not: Kose parantezli alanlar universite, ogrenci ve danisman bilgilerine gore doldurulmak uzere birakilmistir.
+Bu surum akademik proposal biciminde, atifli ve kaynakcali olarak hazirlanmistir.
+\end{minipage}
+\end{center}
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+
+\section*{Ozet}
+\addcontentsline{toc}{section}{Ozet}
+
+Bu arastirma onerisi, klasik CPU scheduling literaturundeki \textit{adaptive time quantum secimi}
+ile hardware reliability literaturundeki \textit{aging-aware runtime control} yaklasimlarini tek bir
+kontrol cercevesinde birlestirmeyi amaclamaktadir. Mevcut Round Robin turevi scheduler calismalari,
+quantum degerini burst time, ready-queue uzunlugu veya istatistiksel ozetler uzerinden belirlemeye
+odaklanirken; reliability-aware sistemler termal yonetim, DVFS, task remapping ve online monitor geri
+bildirimi kullanarak donanim omrunu korumaya calismaktadir \cite{behera2010,marr2022,srinivasan2004,kumar2011}.
+Ancak scheduler seviyesinde quantum seciminin dogrudan thermal ve aging telemetry ile birlestirildigi
+arastirma sayisi halen sinirlidir.
+
+Bu calismada, queue-state, thermal durum ve aging estimate bilgisini ayni kontrol dongusunde kullanan
+bir \textit{aging-aware adaptive scheduler} tasarlanmasi onerilmektedir. Onerilen yontemsel cerceve uc
+asamalidir: (i) heuristic aging-penalty tabanli quantum secimi, (ii) physics-informed supervised learning
+ile optimum quantum prediction, (iii) contextual bandit veya reinforcement learning tabanli policy ogrenimi.
+Arastirmanin temel hipotezi, boyle bir scheduler'in ya ayni performans seviyesinde daha dusuk aging birikimi
+ya da ayni aging butcesi altinda daha iyi performans saglayabilecegidir.
+
+\textbf{Anahtar Kelimeler:} adaptive scheduling, Round Robin, time quantum, hardware aging,\\ reliability-aware control, reinforcement learning
+
+\newpage
+\pagenumbering{arabic}
+\onehalfspacing
+
+\section{Giris}
+
+Time quantum secimi, zaman paylasimli scheduler tasariminin temel kararlarindan biridir. Quantum cok kucuk
+secildiginde context switch maliyeti ve scheduler overhead artar; quantum cok buyuk secildiginde ise interaktiflik,
+response time ve kisa islerin tamamlama davranisi olumsuz etkilenir. Bu nedenle dynamic Round Robin literaturu,
+quantum degerinin workload'a gore uyarlanmasi gerektigini uzun suredir gostermektedir \cite{behera2010,noon2011,marr2022,zohora2024}.
+
+Bununla birlikte scheduler kararlari yalnizca performans degil, ayni zamanda sistemin fiziksel sagligi uzerinde de
+dolayli etkiler uretir. Dengesiz cekirdek kullanimi, hotspot olusumu, uzun sureli yuksek utilization ve termal
+gradyanlar; NBTI, PBTI, HCI, electromigration ve thermal cycling gibi aging mekanizmalarini hizlandirabilir
+\cite{srinivasan2004,agarwal2007,kumar2011}. Buna ragmen scheduling literaturu ile aging-aware control literaturu
+buyuk olcude ayri gelismistir.
+
+Bu proposal'in motivasyonu, bu iki damari birlestirmektir: scheduler, queue-state ile birlikte thermal ve aging
+geri bildirimine de bakarak quantum, migration ve gerekiyorsa DVFS aksiyonlari uretebilir mi?
+
+\section{Problem Tanimi}
+
+Arastirmanin temel problemi su sekilde ifade edilebilir:
+
+\begin{quote}
+Sabit veya yalnizca queue-istatistiklerine dayali dynamic quantum secimi, scheduler kararlarinin uzun vadeli
+hardware aging ve reliability maliyetlerini dikkate almamaktadir. Bu nedenle performans, fairness, termal durum
+ve projected lifetime'i birlikte optimize eden yeni bir scheduler-level kontrol mekanizmasina ihtiyac vardir.
+\end{quote}
+
+Bu problem ozellikle multicore sistemlerde daha belirgindir; cunku farkli cekirdeklere gorev dagilimi, context-switch
+ritmi ve termal yogunluk, aging davranisina zamansal ve mekansal olarak etki etmektedir.
+
+\section{Arastirma Sorulari ve Hipotezler}
+
+\subsection{Arastirma Sorulari}
+
+\begin{enumerate}[leftmargin=*]
+\item Queue-state ile thermal/aging telemetry birlikte kullanildiginda quantum secimi daha dengeli bir performance-reliability trade-off'u saglayabilir mi?
+\item Aging-aware adaptive scheduler, sabit RR ve klasik dynamic RR yontemlerine gore ayni throughput seviyesinde daha dusuk aging score uretebilir mi?
+\item Physics-informed supervised learning veya RL tabanli policy'ler, heuristic yontemlere gore workload degisimi altinda daha iyi genelleme yapabilir mi?
+\item Scheduler karar uzayina migration ve DVFS eklendiginde projected lifetime uzerinde anlamli iyilesme elde edilir mi?
+\end{enumerate}
+
+\subsection{Hipotezler}
+
+\begin{enumerate}[leftmargin=*]
+\item Queue-aware ve aging-aware hibrit scheduler'lar, geleneksel dynamic RR scheduler'lara gore daha iyi bir latency-reliability dengesi saglar.
+\item Thermal ve aging state quantum secimine dahil edildiginde hotspot davranisi ve birikimli stres dagilimi azalir.
+\item Physics-informed supervised modeller, saf istatistik tabanli scheduler'lardan daha iyi quantum secimi yapabilir.
+\item RL tabanli denetim, uygun reward ve guvenlik kisitlari ile uzun vadeli aging maliyetini azaltabilir.
+\end{enumerate}
+
+\section{Arastirmanin Onemi ve Katkisi}
+
+Bu arastirmanin onemi dort noktada toplanabilir:
+
+\begin{enumerate}[leftmargin=*]
+\item Scheduling literaturu ile aging-aware reliability literaturunu birlestirmesi
+\item Quantum secimini sadece performans degil, ayni zamanda donanim sagligi problemi olarak ele almasi
+\item Heuristic, supervised learning ve RL tabanli yontemleri ortak bir simulator altinda karsilastirmasi
+\item ``same performance, less aging'' ve ``same aging budget, better performance'' iddialarini nicel olarak test etmesi
+\end{enumerate}
+
+\section{Literatur Taramasi}
+
+\subsection{Adaptive Time Quantum Scheduling}
+
+Round Robin scheduler uzerinde quantum seciminin dinamiklestirilmesi uzun suredir calisilan bir alandir.
+Behera ve ark. yeniden ayarlanmis dynamic quantum yontemi ile context switch ve turnaround time acisindan iyilesme
+raporlamistir \cite{behera2010}. Noon ve ark. ise quantum degerini mean burst time tabanli bir kural ile secmistir
+\cite{noon2011}. Daha yakin tarihli calismalarda median-average ve percentile tabanli daha dayanikli yaklasimlar
+onerilmistir \cite{marr2022,zohora2024}. Bu literatur, workload-aware quantum seciminin faydali oldugunu gosterse de,
+termal ve aging etkileri cogu zaman modelin disinda birakilmistir.
+
+\subsection{AI Tabanli Scheduler Yaklasimlari}
+
+AI tabanli scheduler calismalari artmakla birlikte, quantum secimini dogrudan bir sequential decision problemi olarak
+ele alan calisma sayisi azdir. Chitaliya ve ark. quantum optimizasyonunu bir tahmin problemi olarak formulize edip
+ML modelleri ile optimum quantum kestirimi denemistir \cite{chitaliya2023}. Buna karsilik scheduler-level RL calismalari
+genis ama daginik bir literatur olusturmakta; gercek CPU quantum secimi ile dogrudan bag kuran calisma sayisi sinirlidir.
+
+\subsection{Hardware Aging ve Reliability-Aware Control}
+
+Srinivasan ve ark. lifetime reliability-aware microprocessors fikrini ortaya koyarak mikroislemci tasariminda
+aging'i temel bir sistem seviyesi sorun olarak tanimlamistir \cite{srinivasan2004}. Agarwal ve ark. transistor aging
+icin failure prediction mekanizmalarini one cikarirken \cite{agarwal2007}, Kumar ve ark. aging kaynakli performans
+bozulumunu telafi etmek icin adaptif devre seviyesinde teknikler gelistirmistir \cite{kumar2011}. Reliability-aware
+DVFS ve runtime thermal management calismalari da performans ile lifetime arasindaki trade-off'un scheduler ve runtime
+katmaninda yonetilebilecegini gostermektedir \cite{aydin2009,yeganeh2021}.
+
+\subsection{Literatur Boslugu}
+
+Literaturdeki ana bosluklar su sekildedir:
+
+\begin{itemize}[leftmargin=*]
+\item Quantum secimi calismalari hardware aging bilgisini kullanmaz.
+\item Aging-aware control calismalari scheduler quantum'unu dogrudan karar degiskeni olarak kullanmaz.
+\item AI tabanli scheduler yaklasimlari reliability-centric objective kurmakta zayiftir.
+\end{itemize}
+
+Bu proposal tam olarak bu bosta konumlanmaktadir.
+
+\section{Onerilen Yontem}
+
+\subsection{Genel Cerceve}
+
+Onerilen sistem dort temel bilesenden olusur:
+
+\begin{enumerate}[leftmargin=*]
+\item Workload generator veya trace source
+\item Scheduler engine
+\item Thermal estimator ve aging estimator
+\item Logging, evaluation ve analysis katmani
+\end{enumerate}
+
+Policy katmani queue-state, thermal telemetry ve aging estimate bilgisini alarak quantum, migration ve opsiyonel
+olarak DVFS karari uretecektir.
+
+\subsection{Yontem 1: Heuristic Aging-Penalized Quantum}
+
+Ilk yontem aciklanabilir bir baseline olarak tanimlanmaktadir:
+
+\[
+Q_t = f(S^{queue}_t) - \lambda_1 g(S^{thermal}_t) - \lambda_2 h(S^{aging}_t)
+\]
+
+Burada $f$, mean/median/quartile tabanli temel quantum uretir; $g$ ve $h$ ise sicaklik, hotspot severity,
+thermal gradient, cumulative stress ve tahmini slack loss gibi sinyallere dayali ceza fonksiyonlaridir.
+
+\subsection{Yontem 2: Physics-Informed Supervised Learning}
+
+Bu asamada optimum quantum secimi bir prediction problemi olarak ele alinacaktir. Farkli workload pencereleri icin
+farkli quantum degerleri taranarak bir objective tanimlanacaktir:
+
+\[
+J = w_1 \cdot \text{Latency} + w_2 \cdot \text{ContextSwitchCost} + w_3 \cdot \text{ThermalCost} + w_4 \cdot \text{AgingCost}
+\]
+
+Minimum $J$ veren quantum ``etiket'' olarak atanacak ve Random Forest, XGBoost, LightGBM gibi modellerle quantum
+prediction yapilacaktir. Bu yontem physics-informed olarak adlandirilir; cunku etiketleme ve feature tasarimi thermal
+ve aging anlami tasiyan degiskenler uzerinden kurulacaktir.
+
+\subsection{Yontem 3: Contextual Bandit ve Reinforcement Learning}
+
+Daha ileri asamada scheduler sequential decision problemi olarak ele alinacaktir. State uzayi queue length,
+remaining burst statistics, per-core utilization, current temperature, temperature gradient, cumulative aging score,
+onceki quantum ve migration history gibi ozellikleri icerecektir. Reward genel olarak asagidaki bicimde tasarlanabilir:
+
+\[
+R_t = \alpha \cdot \text{Throughput}_t - \beta \cdot \text{ResponseTime}_t - \gamma \cdot \text{ContextSwitches}_t - \delta \cdot \text{HotspotPenalty}_t - \eta \cdot \text{AgingIncrement}_t
+\]
+
+Bu asamada DQN, Double DQN veya PPO gibi algoritmalar denenebilir. Ancak tum AI policy'leri bir safety filter altinda
+calisacak; peak temperature limiti, starvation prevention ve max migration rate gibi kurallar korunacaktir.
+
+\section{Deneysel Tasarim}
+
+\subsection{Simulator Ortami}
+
+Ilk asamada Python tabanli discrete-event scheduler simulator kurulmasi planlanmaktadir. Bu secim, hizli deneysellik,
+tekrarlanabilirlik ve policy varyantlarini kolay karsilastirma avantajlari saglamaktadir. Ileri asamada gem5 veya Sniper
+entegrasyonu opsiyonel olarak dusunulebilir.
+
+\subsection{Workload Siniflari}
+
+\begin{longtable}{@{}p{3.3cm}p{2.1cm}p{8.0cm}@{}}
+\caption{Planlanan workload siniflari.}\\
+\toprule
+\textbf{Sinif} & \textbf{Tur} & \textbf{Aciklama} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{l}{\small\itshape (devami)}\\
+\toprule
+\textbf{Sinif} & \textbf{Tur} & \textbf{Aciklama} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+Kisa CPU-bound & Sentetik & Kisa burst'ler; response time hassasiyeti yuksek \\
+Uzun CPU-bound & Sentetik & Uzun burst'ler; quantum buyuklugune hassas \\
+Heavy-tail bursts & Sentetik & Pareto benzeri uzun-kuyruk dagilim \\
+Bursty arrivals & Sentetik & Kume halinde gelen prosesler ile queue baskisi \\
+Periodic tasks & Sentetik & Gercek-zaman benzeri duzenli isler \\
+Hot-core stress & Senaryo & Ayni cekirdekte aging birikimini zorlayan dagilim \\
+Balanced multicore mix & Senaryo & Wear-leveling davranisini olcmeye uygun karisik yuk \\
+Trace-driven mix & Gercekci & Mumkunse gercek scheduler trace'lerinden turetilmis isler \\
+\end{longtable}
+
+\subsection{Baseline Yontemler}
+
+\begin{enumerate}[leftmargin=*]
+\item Fixed Round Robin
+\item Mean-based dynamic RR
+\item Median/quartile-based dynamic RR
+\item Thermal-aware scheduler
+\item Aging-aware fakat AI icermeyen scheduler
+\item Onerilen heuristic hybrid scheduler
+\item Onerilen supervised scheduler
+\item Onerilen bandit / RL scheduler
+\end{enumerate}
+
+\subsection{Thermal ve Aging Modelleri}
+
+Termal model asagidaki sekilde basit ama tutarli bir formda ele alinacaktir:
+
+\[
+T_{t+1} = aT_t + bU_t + cS_t + dT_{amb}
+\]
+
+Burada $U_t$ utilization, $S_t$ switching proxy ve $T_{amb}$ ortam sicakligidir. Aging increment ise:
+
+\[
+\Delta A_t = k_1 e^{\rho T_t} + k_2 U_t^p + k_3 C_t
+\]
+
+Burada $C_t$, context-switch veya switching-rate kaynakli ek stresi temsil eder. Ileri asamada BTI-like,
+HCI-like, EM proxy ve thermal-cycling bilesenleri ayri takip edilebilir.
+
+\section{Degerlendirme Metrikleri}
+
+\subsection{Scheduler Performansi}
+
+\begin{itemize}[leftmargin=*]
+\item Average waiting time
+\item Average turnaround time
+\item Average response time
+\item Throughput
+\item Context switch count
+\item Fairness ve starvation gostergeleri
+\end{itemize}
+
+\subsection{Reliability ve Thermal Metrikleri}
+
+\begin{itemize}[leftmargin=*]
+\item Peak temperature
+\item Mean temperature per core
+\item Thermal gradient
+\item Thermal cycling severity
+\item Cumulative aging score
+\item Projected lifetime proxy
+\end{itemize}
+
+\subsection{Temel Karsilastirma Iddialari}
+
+Bu proposal su iki iddiayi test edecektir:
+
+\begin{itemize}[leftmargin=*]
+\item Ayni performans seviyesinde daha dusuk aging birikimi
+\item Ayni aging butcesi altinda daha iyi performans
+\end{itemize}
+
+\section{Ornek Senaryo ve Objektif Beklenti Cercevesi}
+
+Bu bolum, onerilen sistemin nasil davranacagini somut bir senaryo altinda gostermek ve ayni zamanda
+calismadan beklenen fayda ile olasi sinirlari acik bicimde ifade etmek icin eklenmistir.
+
+\subsection{Ornek Senaryo}
+
+Dort cekirdekli bir sistem dusunulsun. Ready queue icinde hem kisa hem uzun CPU-bound isler bulunmaktadir.
+Sistem belirli bir zaman penceresinde su kosullara girsin:
+
+\begin{itemize}[leftmargin=*]
+\item Core 1 uzun suredir yuksek utilization altinda calismaktadir.
+\item Core 1 sicakligi diger cekirdeklerden daha yuksektir.
+\item Core 1 icin aging score diger cekirdeklere gore daha hizli artmaktadir.
+\item Queue doluluk orani yuksektir; dolayisiyla scheduler performans baskisi altindadir.
+\end{itemize}
+
+Bu durumda geleneksel bir dynamic RR scheduler buyuk olasilikla queue basincini azaltmak icin quantum'u arttiracak,
+fakat bunu yaparken donanim sagligi bilgisini kullanmadigi icin ayni cekirdegin uzerindeki stresi daha da arttirabilecektir.
+Onerilen aging-aware scheduler ise ayni anda su aksiyonlardan birini veya birkacini birlikte degerlendirecektir:
+
+\begin{enumerate}[leftmargin=*]
+\item quantum degerini queue baskisina gore arttirmak, fakat thermal/aging cezasi nedeniyle bu artis miktarini sinirlamak
+\item isi daha az yorulmus bir cekirdege migrate etmek
+\item gerekiyorsa ilgili cekirdekte DVFS ile frekans/voltaj seviyesini daha korumaci moda almak
+\item fairness bozuluyorsa migration veya quantum kararini filtrelemek
+\end{enumerate}
+
+Bu senaryo, sistemin sadece ``hangi is ne kadar sure calissin'' degil, ayni zamanda ``bu karar donanimi nasil etkileyecek''
+sorusuna cevap veren bir scheduler oldugunu gosterir.
+
+\subsection{Muhtemel Pozitif Sonuclar}
+
+Bu senaryo altinda beklenebilecek olumlu sonuclar sunlardir:
+
+\begin{itemize}[leftmargin=*]
+\item belirli cekirdeklerde hotspot davranisinin azalmasi
+\item core bazli aging score dagiliminin daha dengeli hale gelmesi
+\item sabit RR veya yalnizca queue-statistics tabanli RR'a gore benzer throughput altinda daha dusuk aging birikimi
+\item thermal gradient ve peak temperature degerlerinde azalma
+\item uzun sureli kosullarda projected lifetime proxy'sinde iyilesme
+\end{itemize}
+
+\subsection{Muhtemel Negatif Sonuclar ve Sinirlar}
+
+Bu proposal'in objektif degerlendirilmesi icin, olumsuz veya sinirli sonuc ihtimalleri de acik bicimde kabul edilmelidir:
+
+\begin{itemize}[leftmargin=*]
+\item migration ve policy hesaplama overhead'i nedeniyle toplam latency bazen artabilir
+\item aging korumasi fazla agresif olursa throughput veya turnaround time kotulesebilir
+\item thermal bilgi aging'i tek basina temsil etmeyebilir; bu nedenle proxy modeli eksik kalabilir
+\item RL tabanli policy, egitim verisine veya reward agirliklarina hassas olabilir
+\item simulator sonucunda gozlenen fayda, gercek sistem entegrasyonunda daha kucuk kalabilir
+\item bazi workload ailelerinde klasik dynamic RR zaten yeterince iyi calisiyorsa ek kazanc sinirli olabilir
+\end{itemize}
+
+\subsection{Objektif Basari Kriterleri}
+
+Calisma ancak asagidaki turden bir sonuc gosterebilirse guclu kabul edilmelidir:
+
+\begin{enumerate}[leftmargin=*]
+\item ayni throughput altinda istatistiksel olarak anlamli aging score azalmasi
+\item ayni aging butcesi altinda waiting time veya turnaround time iyilesmesi
+\item peak temperature ve hotspot sayisinda acik azalma
+\item birden fazla workload sinifinda tutarli iyilesme
+\end{enumerate}
+
+Eger bu kriterler saglanmazsa, proposal'in degerli ciktisi yine de su olabilir: scheduler-level aging-aware kontrolun
+hangi kosullarda faydali oldugu ve hangi kosullarda overhead nedeniyle zayif kaldiginin acikca ortaya konmasi.
+
+\section{Beklenen Zorluklar ve Risk Azaltma}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+\textbf{Risk} & \textbf{Sorun} & \textbf{Azaltma Stratejisi} \\
+\midrule
+Aging model sade kalmasi & Fiziksel gercekligi eksik temsil etme & Sensitivity analysis, alternatif proxy'ler ve parametre taramasi \\
+Sentetik workload bias & Gercek sistem davranisinin eksik yansimasi & Trace-driven workload ve farkli dagilim aileleri kullanma \\
+RL kararsizligi & Reward hassasiyeti ve egitim zorlugu & Once heuristic ve supervised baseline'lari oturtma \\
+Policy overhead & Kontrol maliyetinin kazanci silmesi & Ayrik action space ve seyrek update \\
+Fairness bozulmasi & Aging korumasi bazi isleri cezalandirabilir & Fairness cezasi ve starvation bounds \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Calisma Plani}
+
+\begin{center}
+\begin{ganttchart}[
+    hgrid,
+    vgrid,
+    time slot format=isodate-yearmonth,
+    x unit=0.95cm,
+    y unit title=0.6cm,
+    y unit chart=0.7cm,
+    title/.append style={fill=deepblue!10},
+    bar/.append style={fill=accentblue!60},
+    bar height=0.55
+]{2026-05}{2026-11}
+\gantttitlecalendar{year, month}\\
+\ganttbar{Literatur ve proposal sonlandirma}{2026-05}{2026-05}\\
+\ganttbar{Baseline simulator}{2026-05}{2026-06}\\
+\ganttbar{Thermal ve aging model entegrasyonu}{2026-06}{2026-07}\\
+\ganttbar{Heuristic hybrid scheduler}{2026-07}{2026-08}\\
+\ganttbar{Veri uretimi ve etiketleme}{2026-08}{2026-09}\\
+\ganttbar{Supervised model deneyleri}{2026-09}{2026-10}\\
+\ganttbar{Bandit / RL deneyleri}{2026-10}{2026-11}\\
+\ganttbar{Ablation, analiz ve final yazim}{2026-11}{2026-11}
+\end{ganttchart}
+\end{center}
+
+\section{Beklenen Sonuclar}
+
+Beklenen sonuc, onerilen scheduler'in geleneksel scheduler'lara gore daha iyi bir performance-reliability
+trade-off'u gostermesidir. En guclu deneysel sonuc tipleri sunlar olacaktir:
+
+\begin{enumerate}[leftmargin=*]
+\item Benzer throughput altinda anlamli aging score azalmasi
+\item Benzer aging limiti altinda daha dusuk waiting/turnaround time
+\item Peak temperature ve hotspot davranisinda iyilesme
+\item Workload aileleri boyunca daha tutarli scheduler davranisi
+\end{enumerate}
+
+Ancak objektif bir degerlendirme icin su ihtimaller de raporlanmalidir:
+
+\begin{itemize}[leftmargin=*]
+\item bazi workload'larda kazanc cok kucuk olabilir
+\item bazi policy'ler aging'i azaltirken latency'yi arttirabilir
+\item en iyi performansi veren policy ile en iyi reliability sonucu veren policy ayni olmayabilir
+\item RL tabanli surum, heuristic veya supervised surumden her zaman daha iyi cikmayabilir
+\end{itemize}
+
+Dolayisiyla calismanin amaci yalnizca ``onerilen yontem her kosulda en iyidir'' demek degil; hangi kosullarda avantaj
+sagladigini, hangi kosullarda maliyet olusturdugunu ve trade-off yuzeyinin nasil sekillendigini gostermektir.
+
+\section{Sonuc}
+
+Bu proposal, adaptive time quantum scheduling ile aging-aware runtime control arasindaki boslugu doldurmaya yonelik
+ayrintili ve uygulanabilir bir arastirma cercevesi sunmaktadir. Onerilen sistem, quantum secimini yalnizca performans
+problemine indirgememekte; ayni zamanda donanim sagligini da karar mekanizmasina dahil etmektedir. Bu yonuyle calisma,
+isletim sistemleri, bilgisayar mimarisi ve AI for systems alanlarinin kesisiminde anlamli bir katki potansiyeli tasimaktadir.
+
+\newpage
+\begin{thebibliography}{99}
+
+\bibitem{behera2010}
+H. S. Behera, R. K. Mohanty, and D. Nayak,
+``A New Proposed Dynamic Quantum with Re-Adjusted Round Robin Scheduling Algorithm and Its Performance Analysis,''
+\textit{International Journal of Computer Applications}, 2010.
+
+\bibitem{noon2011}
+A. Noon, A. Kalakech, and S. Kadry,
+``A New Round Robin Based Scheduling Algorithm for Operating Systems: Dynamic Quantum Using the Mean Average,''
+arXiv preprint arXiv:1111.5348, 2011.
+
+\bibitem{marr2022}
+Sakshi, C. Sharma, S. Sharma, S. Kautish, S. A. M. Alsallami, E. M. Khalil, and A. W. Mohamed,
+``A New Median-Average Round Robin Scheduling Algorithm,''
+\textit{Alexandria Engineering Journal}, 2022.
+
+\bibitem{zohora2024}
+M. F. Zohora, F. Farhin, and M. S. Kaiser,
+``An Enhanced Round Robin Using Dynamic Time Quantum for Real-Time Asymmetric Burst Length Processes,''
+\textit{PLOS ONE}, 2024.
+
+\bibitem{chitaliya2023}
+P. Chitaliya et al.,
+``Time Quantum Optimization in Round Robin Algorithm,''
+\textit{NMITCON}, 2023.
+
+\bibitem{srinivasan2004}
+J. Srinivasan et al.,
+``The Case for Lifetime Reliability-Aware Microprocessors,''
+\textit{ISCA}, 2004.
+
+\bibitem{agarwal2007}
+M. Agarwal et al.,
+``Circuit Failure Prediction and Its Application to Transistor Aging,''
+\textit{VTS}, 2007.
+
+\bibitem{aydin2009}
+H. Aydin and D. Zhu,
+``Reliability-Aware Energy Management for Periodic Real-Time Tasks,''
+\textit{IEEE Transactions on Computers}, 2009.
+
+\bibitem{kumar2011}
+S. V. Kumar, C. H. Kim, and S. S. Sapatnekar,
+``Adaptive Techniques for Overcoming Performance Degradation Due to Aging in CMOS Circuits,''
+\textit{IEEE Transactions on VLSI Systems}, 2011.
+
+\bibitem{yeganeh2021}
+A. Yeganeh-Khaksar et al.,
+``Ring-DVFS: Reliability-Aware Reinforcement Learning-Based DVFS for Real-Time Embedded Systems,''
+\textit{IEEE Embedded Systems Letters}, 2021.
+
+\end{thebibliography}
+
+\end{document}
